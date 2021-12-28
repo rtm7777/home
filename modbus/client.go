@@ -16,12 +16,12 @@ var clientConfigurations = map[string]modbus.ClientConfiguration{
 		StopBits: 1,
 		Timeout:  300 * time.Millisecond,
 	},
-	// "serial": {
-	// 	URL:      "rtu:///dev/ttyUSB0",
-	// 	Speed:    19200,
-	// 	StopBits: 1,
-	// 	Timeout:  300 * time.Millisecond,
-	// },
+	"serial": {
+		URL:      "rtu:///dev/ttyUSB0",
+		Speed:    19200,
+		StopBits: 1,
+		Timeout:  300 * time.Millisecond,
+	},
 }
 
 func InitClients() {
