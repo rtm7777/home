@@ -1,9 +1,10 @@
 package models
 
-import "gorm.io/gorm"
+import "time"
 
 type Sdm230 struct {
-	gorm.Model
+	ID          uint `gorm:"primaryKey"`
+	CreatedAt   time.Time
 	ActivePower float32
 	Voltage     float32
 	Current     float32

@@ -30,15 +30,15 @@ func startSwitchesPolling() {
 		if registers, err := modbus.N4DIH32.ReadHoldingRegisters(); err != nil {
 			fmt.Println(err.Error())
 		} else {
-			fmt.Println(registers)
+			HandleRegisters(registers)
 		}
 	}
 }
 
 func startSDMPolling() {
-	inputs := []string{"ActivePower", "Voltage", "Frequency", "Current", "TotalEnergy"}
+	inputs := []string{"ActivePower", "Voltage", "Current", "Frequency", "TotalEnergy"}
 	tick := make(chan time.Time)
-	go poller.NewPoller(time.Second * 1).Run(tick)
+	go poller.NewPoller(time.Minute * 5).Run(tick)
 
 	for range tick {
 		var values []float32
