@@ -1,31 +1,24 @@
 package poller
 
 import (
-	"fmt"
 	"time"
-
-	"home/modbus"
 )
 
 type poller struct {
 	ticker *time.Ticker
 }
 
-func NewPoller() *poller {
+func NewPoller(timer time.Duration) *poller {
 	return &poller{
-		ticker: time.NewTicker(time.Millisecond * 250),
+		ticker: time.NewTicker(timer),
 	}
 }
 
-func (p *poller) Run(device *modbus.ModbusDevice, registers chan<- []uint16) {
+func (p *poller) Run(tick chan<- time.Time) {
 	for {
 		select {
-		case <-p.ticker.C:
-			if hRegs, err := device.ReadHoldingRegisters(); err != nil {
-				fmt.Println(err.Error())
-			} else {
-				registers <- hRegs
-			}
+		case t := <-p.ticker.C:
+			tick <- t
 		}
 	}
 }

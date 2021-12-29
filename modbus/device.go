@@ -20,13 +20,13 @@ var SDM230 = ModbusDevice{
 	Client: "usb",
 	UnitId: 11,
 	InputRegisters: Registers{
-		"voltage":        0,
-		"current":        6,
-		"active_power":   36,
-		"apparent_power": 18,
-		"reactive_power": 24,
-		"frequency":      70,
-		"total_energy":   342,
+		"Voltage":       0,
+		"Current":       6,
+		"ActivePower":   36,
+		"ApparentPower": 18,
+		"ReactivePower": 24,
+		"Frequency":     70,
+		"TotalEnergy":   342,
 	},
 }
 

@@ -2,31 +2,60 @@ package main
 
 import (
 	"fmt"
+	"home/database"
+	"home/database/models"
 	"home/modbus"
 	"home/poller"
+	"time"
 )
 
 func main() {
 	modbus.InitClients()
 
-	power, _ := modbus.SDM230.ReadFloatInput("power")
-	fmt.Println(power, "W")
+	database.Connect()
+	database.Migrate()
 
-	voltage, _ := modbus.SDM230.ReadFloatInput("voltage")
-	fmt.Println(voltage, "V")
+	go startSwitchesPolling()
+	go startSDMPolling()
 
-	freq, _ := modbus.SDM230.ReadFloatInput("frequency")
-	fmt.Println(freq, "Hz")
+	exit := make(chan bool)
+	<-exit
+}
 
-	if total, err := modbus.SDM230.ReadFloatInput("total_energy"); err != nil {
-		fmt.Println(err.Error())
-	} else {
-		fmt.Println(total, "kwh")
+func startSwitchesPolling() {
+	tick := make(chan time.Time)
+	go poller.NewPoller(time.Millisecond * 200).Run(tick)
+
+	for range tick {
+		if registers, err := modbus.N4DIH32.ReadHoldingRegisters(); err != nil {
+			fmt.Println(err.Error())
+		} else {
+			fmt.Println(registers)
+		}
 	}
+}
 
-	registers := make(chan []uint16)
-	go poller.NewPoller().Run(&modbus.N4DIH32, registers)
-	for range registers {
-		fmt.Println(<-registers)
+func startSDMPolling() {
+	inputs := []string{"ActivePower", "Voltage", "Frequency", "Current", "TotalEnergy"}
+	tick := make(chan time.Time)
+	go poller.NewPoller(time.Second * 1).Run(tick)
+
+	for range tick {
+		var values []float32
+		for _, input := range inputs {
+			value, err := modbus.SDM230.ReadFloatInput(input)
+			if err != nil {
+				return
+			}
+			values = append(values, value)
+		}
+
+		database.DB.Create(&models.Sdm230{
+			ActivePower: values[0],
+			Voltage:     values[1],
+			Current:     values[2],
+			Frequency:   values[3],
+			TotalEnergy: values[4],
+		})
 	}
 }
