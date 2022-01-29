@@ -30,7 +30,7 @@ func startSwitchesPolling() {
 		if registers, err := modbus.N4DIH32.ReadHoldingRegisters(); err != nil {
 			fmt.Println(err.Error())
 		} else {
-			HandleRegisters(registers)
+			HandleSwitches(registers)
 		}
 	}
 }
@@ -45,6 +45,7 @@ func startSDMPolling() {
 		for _, input := range inputs {
 			value, err := modbus.SDM230.ReadFloatInput(input)
 			if err != nil {
+				fmt.Println(err.Error())
 				return
 			}
 			values = append(values, value)

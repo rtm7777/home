@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"home/database"
 	"home/database/models"
+	"home/modbus"
 )
 
 type Switch struct {
@@ -24,13 +25,18 @@ var Switches = map[int]*Switch{
 	9: {name: "stairs", state: false},
 }
 
+var SwitchStates = map[bool]uint16{
+	true:  modbus.R4D1C32.HoldingRegisterStates["open"],
+	false: modbus.R4D1C32.HoldingRegisterStates["close"],
+}
+
 var RegistersPrevState = []uint16{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 func InitSwitcher() {
 
 }
 
-func HandleRegisters(registers []uint16) {
+func HandleSwitches(registers []uint16) {
 	for i, r := range registers {
 		if RegistersPrevState[i] == 1 && r == 0 {
 			sw, ok := Switches[i]
@@ -42,7 +48,10 @@ func HandleRegisters(registers []uint16) {
 					Name:  Switches[i].name,
 					State: Switches[i].state,
 				})
-				fmt.Println("changing switch state:", Switches[i].name, "to", Switches[i].state)
+				err := modbus.R4D1C32.WriteHoldingRegister(Switches[i].name, SwitchStates[Switches[i].state])
+				if err != nil {
+					fmt.Println(err.Error())
+				}
 			}
 		}
 	}

@@ -14,13 +14,13 @@ var clientConfigurations = map[string]modbus.ClientConfiguration{
 		URL:      "rtu:///dev/ttyUSB0",
 		Speed:    9600,
 		StopBits: 1,
-		Timeout:  300 * time.Millisecond,
+		Timeout:  100 * time.Millisecond,
 	},
 	"serial": {
-		URL:      "rtu:///dev/ttyUSB0",
+		URL:      "rtu:///dev/serial",
 		Speed:    19200,
 		StopBits: 1,
-		Timeout:  300 * time.Millisecond,
+		Timeout:  100 * time.Millisecond,
 	},
 }
 
@@ -36,6 +36,8 @@ func InitClients() {
 		if err != nil {
 			fmt.Println("error connection to:", name)
 		}
+
+		fmt.Println("client init success:", name)
 
 		Clients[name] = client
 	}
