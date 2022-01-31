@@ -7,48 +7,45 @@ import (
 	"home/modbus"
 )
 
-type Switch struct {
-	name  string
-	state bool
-}
-
-var Switches = map[int]*Switch{
-	0: {name: "kitchen", state: false},
-	1: {name: "kitchen_backlight", state: false},
-	2: {name: "bathroom", state: false},
-	3: {name: "bathroom_ventilation", state: false},
-	4: {name: "bathroom_towel_dryer", state: false},
-	5: {name: "livingroom_entrance", state: false},
-	6: {name: "livingroom_middle", state: false},
-	7: {name: "livingroom_fireplace", state: false},
-	8: {name: "storageroom", state: false},
-	9: {name: "stairs", state: false},
-}
-
 var SwitchStates = map[bool]uint16{
 	true:  modbus.R4D1C32.HoldingRegisterStates["open"],
 	false: modbus.R4D1C32.HoldingRegisterStates["close"],
 }
+var Inputs []models.Input
+var Loads []models.Load
+
+var InputLoads map[uint16][]models.Load
+
+var LoadStates map[uint16]bool
 
 var RegistersPrevState = []uint16{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 
 func InitSwitcher() {
+	InputLoads = make(map[uint16][]models.Load)
+	LoadStates = make(map[uint16]bool)
 
+	database.DB.Debug().Model(&models.Input{}).Preload("Loads").Find(&Inputs)
+	database.DB.Debug().Model(&models.Load{}).Find(&Loads)
+
+	for _, load := range Loads {
+		LoadStates[load.RegisterIndex] = false
+	}
+	for _, input := range Inputs {
+		InputLoads[input.RegisterIndex] = input.Loads
+	}
 }
 
 func HandleSwitches(registers []uint16) {
 	for i, r := range registers {
 		if RegistersPrevState[i] == 1 && r == 0 {
-			sw, ok := Switches[i]
-			if !ok {
-				fmt.Println("unknown switch, id:", i)
-			} else {
-				Switches[i].state = !sw.state
+			// find all loads this input controls
+			for _, load := range InputLoads[uint16(i)] {
+				LoadStates[load.RegisterIndex] = !LoadStates[load.RegisterIndex]
 				database.DB.Create(&models.ModbusSwitcher{
-					Name:  Switches[i].name,
-					State: Switches[i].state,
+					Name:  load.Name,
+					State: LoadStates[load.RegisterIndex],
 				})
-				err := modbus.R4D1C32.WriteHoldingRegister(Switches[i].name, SwitchStates[Switches[i].state])
+				err := modbus.R4D1C32.WriteHoldingRegister(uint16(i), SwitchStates[LoadStates[uint16(i)]])
 				if err != nil {
 					fmt.Println(err.Error())
 				}

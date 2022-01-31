@@ -15,6 +15,8 @@ func main() {
 	database.Connect()
 	database.Migrate()
 
+	InitSwitcher()
+
 	go startSwitchesPolling()
 	go startSDMPolling()
 

@@ -27,5 +27,5 @@ func Connect() {
 }
 
 func Migrate() {
-	DB.AutoMigrate(&models.Sdm230{}, &models.ModbusSwitcher{})
+	DB.AutoMigrate(&models.Sdm230{}, &models.ModbusSwitcher{}, &models.Input{}, &models.Load{})
 }

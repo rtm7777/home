@@ -17,7 +17,7 @@ var clientConfigurations = map[string]modbus.ClientConfiguration{
 		Timeout:  100 * time.Millisecond,
 	},
 	"serial": {
-		URL:      "rtu:///dev/serial",
+		URL:      "rtu:///dev/serial0",
 		Speed:    19200,
 		StopBits: 1,
 		Timeout:  100 * time.Millisecond,

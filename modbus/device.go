@@ -11,7 +11,6 @@ type RegisterStates map[string]uint16
 
 type ModbusDevice struct {
 	Client                string
-	HoldingRegisters      Registers
 	HoldingRegistersRange []uint16
 	HoldingRegisterStates RegisterStates
 	InputRegisters        Registers
@@ -41,18 +40,6 @@ var N4DIH32 = ModbusDevice{
 var R4D1C32 = ModbusDevice{
 	Client: "usb",
 	UnitId: 1,
-	HoldingRegisters: Registers{
-		"kitchen":              1,
-		"kitchen_backlight":    2,
-		"bathroom":             3,
-		"bathroom_ventilation": 4,
-		"bathroom_towel_dryer": 5,
-		"livingroom_entrance":  6,
-		"livingroom_middle":    7,
-		"livingroom_fireplace": 8,
-		"storageroom":          9,
-		"stairs":               10,
-	},
 	HoldingRegisterStates: RegisterStates{
 		"open":   0x100,
 		"close":  0x200,
@@ -88,11 +75,7 @@ func (d ModbusDevice) writeRegister(register uint16, value uint16) error {
 	return Clients[d.Client].WriteRegister(register, value)
 }
 
-func (d ModbusDevice) WriteHoldingRegister(name string, value uint16) error {
-	registerAddress, ok := d.HoldingRegisters[name]
-	if !ok {
-		return errors.New("Unknown register name: " + name)
-	}
+func (d ModbusDevice) WriteHoldingRegister(registerAddress uint16, value uint16) error {
 	return d.writeRegister(registerAddress, value)
 }
 
