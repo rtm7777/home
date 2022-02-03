@@ -10,7 +10,12 @@ import (
 )
 
 func main() {
+	exit := make(chan bool)
+
 	modbus.InitClients()
+	if len(modbus.Clients) != 2 {
+		exit <- true
+	}
 
 	database.Connect()
 	database.Migrate()
@@ -20,7 +25,6 @@ func main() {
 	go startSwitchesPolling()
 	go startSDMPolling()
 
-	exit := make(chan bool)
 	<-exit
 }
 

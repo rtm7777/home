@@ -37,8 +37,9 @@ func InitClients() {
 			fmt.Println("error connection to:", name)
 		}
 
-		fmt.Println("client init success:", name)
-
-		Clients[name] = client
+		if err == nil {
+			fmt.Println("client init success:", name)
+			Clients[name] = client
+		}
 	}
 }

@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  app:
+    image: "${HOME_APP_IMAGE}:latest"
+    working_dir: /app
+    devices:
+      - /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0:/dev/ttyUSB0:rwm
+      - /dev/serial0:/dev/serial0:rwm
+    volumes:
+      - ${NFS_MOUNT}:${NFS_MOUNT}:rw
+    environment:
+      NFS_MOUNT: "${NFS_MOUNT}"
+      DB_HOST: "${DB_HOST}"
+      DB_PORT: "${DB_PORT}"
+      DB_USER: "${DB_USER}"
+      DB_PASS: "${DB_PASS}"
+      DB_NAME: "${DB_NAME}"
+    entrypoint: ./start.sh
