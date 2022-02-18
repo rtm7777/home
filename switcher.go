@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"log"
+
 	"home/database"
 	"home/database/models"
 	"home/modbus"
@@ -45,7 +46,7 @@ func HandleSwitches(registers []uint16) {
 
 				err := modbus.R4D1C32.WriteHoldingRegister(load.RegisterIndex, SwitchStates[LoadStates[load.RegisterIndex]])
 				if err != nil {
-					fmt.Println(err.Error())
+					log.Println(err.Error())
 				}
 
 				go database.DB.Create(&models.ModbusSwitcher{

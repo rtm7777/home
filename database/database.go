@@ -1,8 +1,8 @@
 package database
 
 import (
-	"fmt"
 	"home/database/models"
+	"log"
 	"os"
 
 	"gorm.io/driver/postgres"
@@ -20,7 +20,7 @@ func Connect() {
 	dsn := "host=" + dbHost + " port=" + dbPort + " user=" + dbUser + " password=" + dbPass + " dbname=" + dbName + " sslmode=disable TimeZone=UTC"
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	} else {
 		DB = db
 	}

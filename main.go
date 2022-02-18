@@ -1,16 +1,28 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"os"
+	"time"
+
 	"home/database"
 	"home/database/models"
 	"home/modbus"
 	"home/poller"
-	"time"
 )
 
 func main() {
 	exit := make(chan bool)
+
+	LOG_FILE := "/mnt/NFS/home_app.log"
+	logFile, err := os.OpenFile(LOG_FILE, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+	if err != nil {
+		log.Panic(err)
+	}
+	defer logFile.Close()
+
+	log.SetOutput(logFile)
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
 	modbus.InitClients()
 	if len(modbus.Clients) != 2 {
@@ -34,7 +46,7 @@ func startSwitchesPolling() {
 
 	for range tick {
 		if registers, err := modbus.N4DIH32.ReadHoldingRegisters(); err != nil {
-			fmt.Println(err.Error())
+			log.Println(err.Error())
 		} else {
 			HandleSwitches(registers)
 		}
@@ -51,7 +63,7 @@ func startSDMPolling() {
 		for _, input := range inputs {
 			value, err := modbus.SDM230.ReadFloatInput(input)
 			if err != nil {
-				fmt.Println(err.Error())
+				log.Println(err.Error())
 				return
 			}
 			values = append(values, value)

@@ -1,7 +1,7 @@
 package modbus
 
 import (
-	"fmt"
+	"log"
 	"time"
 
 	"github.com/simonvetter/modbus"
@@ -29,16 +29,16 @@ func InitClients() {
 	for name, configuration := range clientConfigurations {
 		client, err := modbus.NewClient(&configuration)
 		if err != nil {
-			fmt.Println("error client creation")
+			log.Println("error client creation")
 		}
 
 		err = client.Open()
 		if err != nil {
-			fmt.Println("error connection to:", name)
+			log.Println("error connection to:", name)
 		}
 
 		if err == nil {
-			fmt.Println("client init success:", name)
+			log.Println("client init success:", name)
 			Clients[name] = client
 		}
 	}
