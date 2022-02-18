@@ -8,12 +8,17 @@ services:
       - /dev/serial/by-id/usb-1a86_USB_Serial-if00-port0:/dev/ttyUSB0:rwm
       - /dev/serial0:/dev/serial0:rwm
     volumes:
-      - ${NFS_MOUNT}:${NFS_MOUNT}:rw
+      - nfs:/mnt/NFS:rw
     environment:
-      NFS_MOUNT: "${NFS_MOUNT}"
       DB_HOST: "${DB_HOST}"
       DB_PORT: "${DB_PORT}"
       DB_USER: "${DB_USER}"
       DB_PASS: "${DB_PASS}"
       DB_NAME: "${DB_NAME}"
     entrypoint: ./start.sh
+volumes:
+  nfs:
+    driver_opts:
+      type: "nfs"
+      o: "addr=${NFS_HOST},nfsvers=4"
+      device: ":${NFS_PATH}"
