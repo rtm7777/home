@@ -1,8 +1,8 @@
 # build stage
-FROM --platform=linux/arm/v6 golang:1.17-alpine AS build
+FROM golang:1.18.1-alpine3.15 AS build
 
-ARG TARGETOS
-ARG TARGETARCH
+ENV GOOS=linux
+ENV GOARCH=arm
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN go mod download
 
 COPY . .
 
-RUN GOOS=linux GOARCH=arm go build -o /home_app
+RUN go build -o /home_app
 
 #runtime stage
 FROM --platform=linux/arm/v6 arm32v6/alpine:3.15

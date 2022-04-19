@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"home/database"
 	"home/database/models"
@@ -40,19 +41,21 @@ func InitSwitcher() {
 func HandleSwitches(registers []uint16) {
 	for i, r := range registers {
 		idx := uint16(i)
-		if RegistersPrevState[idx] == 1 && r == 0 {
+		if RegistersPrevState[idx] == 0 && r == 1 {
 			for _, load := range InputLoads[idx] {
 				LoadStates[load.RegisterIndex] = !LoadStates[load.RegisterIndex]
-
+				log.Println("before register write:", time.Now())
 				err := modbus.R4D1C32.WriteHoldingRegister(load.RegisterIndex, SwitchStates[LoadStates[load.RegisterIndex]])
 				if err != nil {
 					log.Println(err.Error())
 				}
 
+				log.Println("before DB write:", time.Now())
 				go database.DB.Create(&models.ModbusSwitcher{
 					Name:  load.Name,
 					State: LoadStates[load.RegisterIndex],
 				})
+				log.Println("after DB write:", time.Now())
 			}
 		}
 	}

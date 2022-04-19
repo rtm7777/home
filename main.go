@@ -58,13 +58,14 @@ func startSDMPolling() {
 	tick := make(chan time.Time)
 	go poller.NewPoller(time.Minute * 5).Run(tick)
 
+poller:
 	for range tick {
 		var values []float32
 		for _, input := range inputs {
 			value, err := modbus.SDM230.ReadFloatInput(input)
 			if err != nil {
 				log.Println(err.Error())
-				return
+				continue poller
 			}
 			values = append(values, value)
 		}
