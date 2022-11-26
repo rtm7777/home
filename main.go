@@ -3,12 +3,11 @@ package main
 import (
 	"log"
 	"os"
-	"time"
 
 	"home/database"
-	"home/database/models"
 	"home/modbus"
-	"home/poller"
+	"home/modules/counters/sdm"
+	"home/modules/switcher"
 )
 
 func main() {
@@ -24,58 +23,20 @@ func main() {
 	log.SetOutput(logFile)
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 
+	database.Connect()
+	database.Migrate()
+
 	modbus.InitClients()
+
 	if len(modbus.Clients) != 2 {
 		exit <- true
 	}
 
-	database.Connect()
-	database.Migrate()
+	switcher.Init()
+	sdm.Init()
 
-	InitSwitcher()
-
-	go startSwitchesPolling()
-	go startSDMPolling()
+	go switcher.StartPolling()
+	go sdm.StartPolling()
 
 	<-exit
-}
-
-func startSwitchesPolling() {
-	tick := make(chan time.Time)
-	go poller.NewPoller(time.Millisecond * 200).Run(tick)
-
-	for range tick {
-		if registers, err := modbus.N4DIH32.ReadHoldingRegisters(); err != nil {
-			log.Println(err.Error())
-		} else {
-			HandleSwitches(registers)
-		}
-	}
-}
-
-func startSDMPolling() {
-	inputs := []string{"ActivePower", "Voltage", "Current", "Frequency", "TotalEnergy"}
-	tick := make(chan time.Time)
-	go poller.NewPoller(time.Minute * 5).Run(tick)
-
-poller:
-	for range tick {
-		var values []float32
-		for _, input := range inputs {
-			value, err := modbus.SDM230.ReadFloatInput(input)
-			if err != nil {
-				log.Println(err.Error())
-				continue poller
-			}
-			values = append(values, value)
-		}
-
-		database.DB.Create(&models.Sdm230{
-			ActivePower: values[0],
-			Voltage:     values[1],
-			Current:     values[2],
-			Frequency:   values[3],
-			TotalEnergy: values[4],
-		})
-	}
 }

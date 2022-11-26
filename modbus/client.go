@@ -4,42 +4,40 @@ import (
 	"log"
 	"time"
 
+	"home/database"
+	"home/database/models"
+
 	"github.com/simonvetter/modbus"
 )
 
 var Clients map[string]*modbus.ModbusClient
 
-var clientConfigurations = map[string]modbus.ClientConfiguration{
-	"usb": {
-		URL:      "rtu:///dev/ttyUSB0",
-		Speed:    9600,
-		StopBits: 1,
-		Timeout:  100 * time.Millisecond,
-	},
-	"serial": {
-		URL:      "rtu:///dev/serial0",
-		Speed:    19200,
-		StopBits: 1,
-		Timeout:  100 * time.Millisecond,
-	},
-}
+var clientsConfigs []models.ModbusClient
 
 func InitClients() {
+	database.DB.Model(&models.ModbusClient{}).Find(&clientsConfigs)
+
 	Clients = make(map[string]*modbus.ModbusClient)
-	for name, configuration := range clientConfigurations {
-		client, err := modbus.NewClient(&configuration)
+
+	for _, configuration := range clientsConfigs {
+		client, err := modbus.NewClient(&modbus.ClientConfiguration{
+			URL:      configuration.URL,
+			Speed:    configuration.Speed,
+			StopBits: configuration.StopBits,
+			Timeout:  time.Duration(configuration.Timeout * uint(time.Millisecond)),
+		})
 		if err != nil {
 			log.Println("error client creation")
 		}
 
 		err = client.Open()
 		if err != nil {
-			log.Println("error connection to:", name)
+			log.Println("error connection to:", configuration.Name)
 		}
 
 		if err == nil {
-			log.Println("client init success:", name)
-			Clients[name] = client
+			log.Println("client init success:", configuration.Name)
+			Clients[configuration.Name] = client
 		}
 	}
 }

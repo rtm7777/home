@@ -9,5 +9,6 @@ type Sdm230 struct {
 	Voltage     float32
 	Current     float32
 	Frequency   float32
+	PhaseAngle  float32
 	TotalEnergy float32
 }
