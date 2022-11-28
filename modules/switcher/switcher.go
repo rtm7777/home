@@ -76,10 +76,10 @@ func Init() {
 }
 
 func StartPolling() {
-	tick := make(chan time.Time)
-	go poller.NewPoller(time.Millisecond * 200).Run(tick)
+	switchesPoller := poller.NewPoller(time.Millisecond * 200)
+	go switchesPoller.Init()
 
-	for t := range tick {
+	for t := range switchesPoller.Tick {
 		go handleSwitches(t)
 	}
 }

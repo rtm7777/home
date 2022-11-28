@@ -6,8 +6,10 @@ import (
 
 	"home/database"
 	"home/modbus"
+	"home/modules/boiler"
 	"home/modules/counters/sdm"
 	"home/modules/switcher"
+	"home/server"
 )
 
 func main() {
@@ -28,15 +30,15 @@ func main() {
 
 	modbus.InitClients()
 
-	if len(modbus.Clients) != 2 {
-		exit <- true
-	}
-
 	switcher.Init()
 	sdm.Init()
+	boiler.Init()
 
 	go switcher.StartPolling()
 	go sdm.StartPolling()
+	// go boiler.StartTempPolling()
+
+	server.Run()
 
 	<-exit
 }

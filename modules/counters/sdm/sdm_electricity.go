@@ -38,10 +38,10 @@ func Init() {
 }
 
 func StartPolling() {
-	tick := make(chan time.Time)
-	go poller.NewPoller(time.Minute * 5).Run(tick)
+	sdmPoller := poller.NewPoller(time.Minute * 5)
+	go sdmPoller.Init()
 
-	for t := range tick {
+	for t := range sdmPoller.Tick {
 		go readSDMDevices(t)
 	}
 }
